@@ -97,6 +97,7 @@
 
 .typing-section {
     margin-top: 18px;
+    max-height: 30vh;
 }
 
 #textarea-input {
@@ -105,7 +106,8 @@
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #cbd5e1;
-    font-size: 16px;
+    font-size: 25px;
+    padding: 2vw;
     resize: vertical;
 }
 

@@ -40,7 +40,13 @@ export default function Homepage() {
         setRunning(false);
         setTestOver(true);
         if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
+
+        const currentMax = Number(localStorage.getItem("maxWpm") || 0);
+        if (avgWpm > currentMax) {
+            localStorage.setItem("maxWpm", avgWpm.toFixed(2));
+        }
     };
+
 
     const handleInput = (e) => {
         const newText = e.target.value;
@@ -65,12 +71,17 @@ export default function Homepage() {
                 <header className="header-section">
                     <div className="header-left">
                         <div id="headline">⌨️ KeySprint</div>
-                        <p className="subtext">Start now → 60s key sprint → with real time SpeeeeD</p>
+                        <p className="subtext">
+                            Start now → 60s key sprint → with real time SpeeeeD |
+                            | Your Max ({localStorage.getItem("maxWpm") || 0})
+                        </p>
                     </div>
+
+
 
                     <div className="header-right">
                         <div className="status-text">
-                            {testOver ? "Test ended" : running ? "Running" : "Ready"}
+                            {testOver ? "Test ended" : running ? `Running : ${((Date.now() - startedAt) / 1000).toFixed(0)}s` : "Ready"}
                         </div>
                         <div className="btn-group">
                             <button
@@ -118,7 +129,7 @@ export default function Homepage() {
                         />
                     </div>
 
-                    <Speedometer wpm={avgWpm}></Speedometer>
+                    <Speedometer wpm={avgWpm} />
                 </section>
             </div>
         </div>
