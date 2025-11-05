@@ -1,0 +1,137 @@
+.home-container {
+    text-align: center;
+    padding: 30px;
+}
+
+.typing-box {
+    margin-top: 20px;
+    font-size: 16px;
+    padding: 10px;
+    color: rgb(154, 154, 154);
+    background-color: rgb(38, 38, 44);
+}
+
+#headline {
+    background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQL6jVIaxaA66ZPsUCjQFsMrLo6bMmM6ZQHQ&s);
+    -webkit-background-clip: text;
+    background-clip: text;
+    font-weight: bold;
+    -webkit-text-fill-color: transparent;
+}
+
+
+.homepage-container {
+    width: 100vw;
+    min-height: 100vh;
+    padding: 28px;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+    font-family: "Inter", sans-serif;
+}
+
+.homepage-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#headline {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.subtext {
+    color: #475569;
+    margin-top: 6px;
+}
+
+.header-right {
+    text-align: right;
+}
+
+.status-text {
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+.start-btn {
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    color: #fff;
+}
+
+.start-btn.disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.stop-btn {
+    background: transparent;
+    color: #0f172a;
+    border: 1px solid #e6e9f2;
+}
+
+.typing-section {
+    margin-top: 18px;
+}
+
+#textarea-input {
+    width: 100%;
+    min-height: 140px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 16px;
+    resize: vertical;
+}
+
+.stats-section {
+    margin-top: 22px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.graph-container {
+    flex: 1;
+}
+
+.speedometer-container {
+    width: 360px;
+    text-align: center;
+}
+
+.avg-wpm {
+    margin-top: 10px;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.avg-info {
+    margin-top: 8px;
+    color: #64748b;
+}
