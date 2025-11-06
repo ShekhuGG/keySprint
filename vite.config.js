@@ -5,9 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react({
+      fastRefresh: false,   // disable React Fast Refresh
       babel: {
         plugins: [['babel-plugin-react-compiler']],
       },
     }),
   ],
-})
+}) 

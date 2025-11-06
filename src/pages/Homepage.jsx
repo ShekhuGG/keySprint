@@ -1,7 +1,9 @@
+//@refresh reset
 import React, { useEffect, useRef, useState } from "react";
 import SpeedGraphCanvas from "../components/SpeedGraphCanvas";
 import Speedometer from "../components/Speedometer";
 import "../styles/Homepage.css";
+import wordlist from "../modules/wordlist.js";
 
 export default function Homepage() {
     const [text, setText] = useState("");
@@ -9,10 +11,24 @@ export default function Homepage() {
     const [running, setRunning] = useState(false);
     const [avgWpm, setAvgWpm] = useState(0);
     const [testOver, setTestOver] = useState(false);
+    const [wordset, setWordSet] = useState([]);
+    const COUNT = 300;
+    wordlist(COUNT, setWordSet);
+    console.log("Afterload : ", wordset.length)
+
 
     const totalCharsRef = useRef(0);
     const avgIntervalRef = useRef(null);
     const TEST_DURATION_MS = 60000;
+
+    useEffect(() => {
+        wordlist(COUNT)
+            .then(words => {
+                setWordSet(words);
+                console.log("Loaded words:", words.length);
+            })
+            .catch(err => console.error(err));
+    }, [COUNT]);
 
     const startTest = () => {
         setText("");
