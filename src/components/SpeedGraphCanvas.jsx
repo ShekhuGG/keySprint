@@ -18,6 +18,7 @@ export default function SpeedGraphCanvas({
     const frameRef = useRef(null);
     const pointsRef = useRef([]); // {t, wpm}
     const startPerfRef = useRef(null);
+    const MAX_WPM = 150;
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -53,6 +54,7 @@ export default function SpeedGraphCanvas({
         function drawAxes() {
             const w = canvas.offsetWidth;
             const h = canvas.offsetHeight;
+
             // background
             ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, w, h);
@@ -60,9 +62,9 @@ export default function SpeedGraphCanvas({
             // Y axis labels
             ctx.fillStyle = "#94A3B8";
             ctx.font = "12px Inter, Arial";
-            ctx.fillText("200", 6, topPad + 6);
+            ctx.fillText(`${MAX_WPM}`, 6, topPad + 6);
             ctx.fillText(
-                "100",
+                `${MAX_WPM / 2}`,
                 6,
                 topPad + (h - topPad - bottomPad) / 2 + 6
             );
@@ -97,7 +99,7 @@ export default function SpeedGraphCanvas({
             // Current WPM
             let wpm = getCurrentWpm();
             if (!isFinite(wpm) || wpm < 0) wpm = 0;
-            const clamped = Math.max(0, Math.min(200, Math.round(wpm)));
+            const clamped = Math.max(0, Math.min(MAX_WPM, Math.round(wpm)));
 
             // Record points
             pointsRef.current.push({ t: elapsed, wpm: clamped });
@@ -108,12 +110,12 @@ export default function SpeedGraphCanvas({
             const plotW = w - leftPad - rightPad;
             const plotH = h - topPad - bottomPad;
             const scaleX = (t) => leftPad + (t / duration) * plotW;
-            const scaleY = (v) => topPad + (plotH - (v / 200) * plotH);
+            const scaleY = (v) => topPad + (plotH - (v / MAX_WPM) * plotH);
 
             // grid lines
             ctx.strokeStyle = "#E6EEF8";
             ctx.lineWidth = 1;
-            const yTicks = [0, 50, 100, 150, 200];
+            const yTicks = [0, 50, 100, 150];
             ctx.beginPath();
             yTicks.forEach((tick) => {
                 const y = scaleY(tick);
@@ -191,8 +193,8 @@ export default function SpeedGraphCanvas({
         <canvas
             ref={canvasRef}
             style={{
-                width: "100%",
-                height: 350,
+                width: "80%",
+                height: 300,
                 borderRadius: 10,
                 background: "#fff",
                 boxShadow: "0 6px 18px rgba(16,24,40,0.04)",

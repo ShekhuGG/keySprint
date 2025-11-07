@@ -1,3 +1,7 @@
+:root {
+    --time: .5s;
+}
+
 .home-container {
     text-align: center;
     padding: 30px;
@@ -17,13 +21,27 @@
     background-clip: text;
     font-weight: bold;
     -webkit-text-fill-color: transparent;
+    position: relative;
+    animation: move 10s infinite linear;
 }
 
 
+@keyframes move {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    100% {
+        background-position: 400% 0%;
+    }
+}
+
+
+
 .homepage-container {
-    width: 100vw;
-    min-height: 100vh;
-    padding: 28px;
+    width: 100%;
+    height: inherit;
+    padding-inline: 2vw;
     box-sizing: border-box;
     background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
     font-family: "Inter", sans-serif;
@@ -44,6 +62,10 @@
     margin: 0;
     font-size: 1.8rem;
     font-weight: 700;
+}
+
+#headline h1 {
+    margin-top: 3vh;
 }
 
 .subtext {
@@ -72,15 +94,31 @@
     cursor: pointer;
     font-weight: 500;
     transition: opacity 0.2s;
+    transition: all .2s ease;
 }
 
 .btn:hover {
     opacity: 0.85;
+    transform: scale(1.01);
+    box-shadow: 0 2px 2px rgb(141, 117, 11);
 }
 
 .start-btn {
-    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    background: linear-gradient(90deg, #cdd00f, #ca8a13);
+    letter-spacing: 2px;
+    font-size: 1rem;
     color: #fff;
+}
+
+.stop-btn {
+    border-radius: grey;
+    background: #b89494;
+}
+
+.stop-btn.disabled {
+    background: transparent;
+    cursor: not-allowed;
+    opacity: 0.8;
 }
 
 .start-btn.disabled {
@@ -89,20 +127,15 @@
     opacity: 0.8;
 }
 
-.stop-btn {
-    background: transparent;
-    color: #0f172a;
-    border: 1px solid #e6e9f2;
-}
+
 
 .typing-section {
-    margin-top: 18px;
+    margin-top: 2vh;
     max-height: 30vh;
 }
 
 #textarea-input {
-    width: 100%;
-    min-height: 140px;
+    width: 60%;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #cbd5e1;
@@ -111,8 +144,12 @@
     resize: vertical;
 }
 
+textarea {
+    max-height: 20vh;
+}
+
 .stats-section {
-    margin-top: 22px;
+    margin-top: 3vh;
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
@@ -136,4 +173,50 @@
 .avg-info {
     margin-top: 8px;
     color: #64748b;
+}
+
+#word-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 2vh;
+}
+
+.word {
+    margin-right: 1vw;
+    margin-top: 1vh;
+    font-size: 1.7rem;
+    border: solid rgb(172, 182, 182) 1px;
+    background-color: #6e7786;
+    color: rgb(209, 218, 219);
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.word.red {
+    background-color: #b56666;
+}
+
+.word.ongoing {
+    background-color: #79a97e;
+    color: white;
+}
+
+.word.correct {
+    background-color: #008d2f;
+}
+
+.firstWords {
+    opacity: 1;
+    animation: delay var(--time) ease forwards;
+}
+
+@keyframes delay {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }

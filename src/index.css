@@ -1,7 +1,13 @@
-html,
-body,
-#root {
+html {
   height: 100%;
-  width: 100%;
+}
+
+body {
+  height: 200vh;
   overflow-x: hidden;
+}
+
+#root,
+#App {
+  height: 100%;
 }

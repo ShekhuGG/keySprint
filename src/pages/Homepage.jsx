@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import SpeedGraphCanvas from "../components/SpeedGraphCanvas";
 import Speedometer from "../components/Speedometer";
 import "../styles/Homepage.css";
-import wordlist from "../modules/wordlist.js";
+import getwordlist from "../modules/wordlist.js";
 
 export default function Homepage() {
     const [text, setText] = useState("");
@@ -12,29 +12,48 @@ export default function Homepage() {
     const [avgWpm, setAvgWpm] = useState(0);
     const [testOver, setTestOver] = useState(false);
     const [wordset, setWordSet] = useState([]);
+    const [wordsCol, setWordsCol] = useState([]);
+    const rendix = useRef(0);
     const COUNT = 300;
-    wordlist(COUNT, setWordSet);
-    console.log("Afterload : ", wordset.length)
-
+    const TOT_WORDS = 15;
 
     const totalCharsRef = useRef(0);
+    const totalWordsRef = useRef(0);
     const avgIntervalRef = useRef(null);
     const TEST_DURATION_MS = 60000;
 
+    // Load words on component mount
     useEffect(() => {
-        wordlist(COUNT)
-            .then(words => {
-                setWordSet(words);
-                console.log("Loaded words:", words.length);
-            })
-            .catch(err => console.error(err));
-    }, [COUNT]);
+        const loadWords = async () => {
+            const words = await getwordlist(COUNT);
+            setWordSet(words);
+            setWordsCol(Array(words.length).fill("")); // initialize all classes
+        };
+        loadWords();
+    }, []);
 
-    const startTest = () => {
+    const markWord = (index, className) => {
+        setWordsCol(prev => {
+            const newCol = [...prev];
+            newCol[index] = className;
+            return newCol;
+        });
+    };
+
+    const startTest = async () => {
         setText("");
         totalCharsRef.current = 0;
         setAvgWpm(0);
         setTestOver(false);
+        rendix.current = 0;
+
+        try {
+            const words = await getwordlist(COUNT);
+            setWordSet(words);
+            setWordsCol(Array(words.length).fill(""));
+        } catch (err) {
+            console.error("Failed to load words:", err);
+        }
 
         const now = Date.now();
         setStartedAt(now);
@@ -43,18 +62,18 @@ export default function Homepage() {
         if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
         avgIntervalRef.current = setInterval(() => {
             const elapsedMin = (Date.now() - now) / 60000;
-            const avg = elapsedMin > 0 ? (totalCharsRef.current / 5) / elapsedMin : 0;
+            // const avg = elapsedMin > 0 ? (totalCharsRef.current / 5) / elapsedMin : 0;
+            const avg = elapsedMin > 0 ? (totalWordsRef.current) / elapsedMin : 0;
             setAvgWpm(Number(avg.toFixed(2)));
 
-            if (Date.now() - now >= TEST_DURATION_MS) {
-                stopTest();
-            }
+            if (Date.now() - now >= TEST_DURATION_MS) stopTest();
         }, 500);
     };
 
     const stopTest = () => {
         setRunning(false);
         setTestOver(true);
+        totalWordsRef.current = 0;
         if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
 
         const currentMax = Number(localStorage.getItem("maxWpm") || 0);
@@ -63,18 +82,56 @@ export default function Homepage() {
         }
     };
 
+    const updateList = () => {
+        rendix.current = 0;
+        const arr = wordset;
+        arr.splice(0, TOT_WORDS);
+        setWordSet(arr);
+        for (let i = 0; i < TOT_WORDS; i++) markWord(i, "");
+    }
 
     const handleInput = (e) => {
-        const newText = e.target.value;
-        const diff = newText.length - text.length;
-        if (running && diff > 0) totalCharsRef.current += diff;
+        let newText = e.target.value;
+        if (!running) return;
+
+        const currentWord = wordset[rendix.current] || "";
+        const spacePressed = newText.endsWith(" ");
+        let wordDone = false;
+        if (spacePressed) {
+            newText = newText.trim();
+            if (newText === currentWord) {
+                markWord(rendix.current, "correct");
+                markWord(rendix.current + 1, "ongoing");
+                totalWordsRef.current++;
+                wordDone = true;
+            } else if (newText.length) {
+                markWord(rendix.current, "red");
+                markWord(rendix.current + 1, "ongoing");
+                wordDone = true;
+            }
+            newText = "";
+        } else {
+            if (!currentWord.startsWith(newText)) {
+                markWord(rendix.current, "red");
+            } else {
+                markWord(rendix.current, "ongoing");
+            }
+        }
+        if (wordDone) {
+            rendix.current++;
+            if (rendix.current % TOT_WORDS == 0) updateList();
+        }
+
+
+        // totalCharsRef.current += 1; // increment for every keystroke
         setText(newText);
     };
 
     const getCurrentWpm = () => {
         if (!startedAt) return 0;
         const elapsedMin = (Date.now() - startedAt) / 60000;
-        return elapsedMin > 0 ? (totalCharsRef.current / 5) / elapsedMin : 0;
+        // return elapsedMin > 0 ? (totalCharsRef.current / 5) / elapsedMin : 0;
+        return elapsedMin > 0 ? (totalWordsRef.current) / elapsedMin : 0;
     };
 
     useEffect(() => {
@@ -86,18 +143,20 @@ export default function Homepage() {
             <div className="homepage-content">
                 <header className="header-section">
                     <div className="header-left">
-                        <div id="headline">⌨️ KeySprint</div>
+                        <div id="headline"><h1>⌨️ KeySprint</h1></div>
                         <p className="subtext">
                             Start now → 60s key sprint → with real time SpeeeeD |
                             | Your Max ({localStorage.getItem("maxWpm") || 0})
                         </p>
                     </div>
 
-
-
                     <div className="header-right">
                         <div className="status-text">
-                            {testOver ? "Test ended" : running ? `Running : ${((Date.now() - startedAt) / 1000).toFixed(0)}s` : "Ready"}
+                            {testOver
+                                ? "Test ended"
+                                : running
+                                    ? `Running : ${((Date.now() - startedAt) / 1000).toFixed(0)}s`
+                                    : "Ready"}
                         </div>
                         <div className="btn-group">
                             <button
@@ -108,7 +167,7 @@ export default function Homepage() {
                                 Start
                             </button>
                             <button
-                                className="btn stop-btn"
+                                className={`btn stop-btn ${running ? "" : "disabled"}`}
                                 onClick={() => {
                                     stopTest();
                                     setText("");
@@ -122,13 +181,18 @@ export default function Homepage() {
                 </header>
 
                 <section className="typing-section">
+                    <div id="word-section">
+                        {wordset.slice(0, TOT_WORDS).map((word, i) => (
+                            <div key={i} className={`word ${wordsCol[i]}`}>{word}</div>
+                        ))}
+                    </div>
                     <textarea
                         id="textarea-input"
                         value={text}
                         onChange={handleInput}
                         placeholder={
                             running
-                                ? "Type... (characters counted when added)"
+                                ? "Type... (words counted if correct)"
                                 : "Click Start to begin the 60s test"
                         }
                         disabled={!running}
