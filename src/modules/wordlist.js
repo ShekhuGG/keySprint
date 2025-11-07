@@ -1,7 +1,9 @@
-export default async function fetchWordList(COUNT) {
-    const res = await fetch("/toughset3k.txt");
-    if (!res.ok) throw new Error("Failed to load word list");
+export default async function fetchWordList({ COUNT, currentLev }) {
 
+    const fileName = currentLev + '.txt';
+    const res = await fetch(fileName);
+    if (!res.ok) throw new Error("Failed to load word list");
+    console.log("Fetching : ", currentLev, fileName);
     const text = await res.text();
     const wordArray = text
         .split(/\s+/)

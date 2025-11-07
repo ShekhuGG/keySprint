@@ -82,51 +82,6 @@
     font-weight: 700;
 }
 
-.btn-group {
-    display: flex;
-    gap: 8px;
-}
-
-.btn {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: opacity 0.2s;
-    transition: all .2s ease;
-}
-
-.btn:hover {
-    opacity: 0.85;
-    transform: scale(1.01);
-    box-shadow: 0 2px 2px rgb(141, 117, 11);
-}
-
-.start-btn {
-    background: linear-gradient(90deg, #cdd00f, #ca8a13);
-    letter-spacing: 2px;
-    font-size: 1rem;
-    color: #fff;
-}
-
-.stop-btn {
-    border-radius: grey;
-    background: #b89494;
-}
-
-.stop-btn.disabled {
-    background: transparent;
-    cursor: not-allowed;
-    opacity: 0.8;
-}
-
-.start-btn.disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-    opacity: 0.8;
-}
-
 
 
 .typing-section {
@@ -219,4 +174,70 @@ textarea {
     100% {
         opacity: 1;
     }
+}
+
+//buttons
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    transition: all .2s ease;
+    letter-spacing: 2px;
+    font-size: 1rem;
+    margin-inline: 1vw;
+    box-shadow: 0 1px 4px rgb(192, 192, 192);
+}
+
+.btn:hover {
+    opacity: 0.85;
+    transform: scale(1.01);
+    box-shadow: 0 2px 2px rgb(141, 117, 11);
+}
+
+.start-btn {
+    background: linear-gradient(90deg, #cdd00f, #ca8a13);
+    color: #fff;
+}
+
+.stop-btn {
+    border-radius: grey;
+    background: #b89494;
+}
+
+.level-btn {
+    min-width: 100px;
+    color: #ffffff;
+}
+
+.level-btn.easy {
+    background: linear-gradient(to right, rgb(155, 229, 120), rgb(183, 183, 123));
+}
+
+.level-btn.medium {
+    background: linear-gradient(to right, rgb(207, 169, 99), rgb(185, 139, 115));
+}
+
+.level-btn.hard {
+    background: linear-gradient(to right, rgb(207, 114, 104), rgb(158, 96, 96));
+}
+
+.stop-btn.disabled {
+    background: transparent;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.start-btn.disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.8;
 }

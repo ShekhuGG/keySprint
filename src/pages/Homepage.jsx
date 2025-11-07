@@ -13,24 +13,26 @@ export default function Homepage() {
     const [testOver, setTestOver] = useState(false);
     const [wordset, setWordSet] = useState([]);
     const [wordsCol, setWordsCol] = useState([]);
+    const [currentLev, setCurrentLev] = useState("easy"); // ✅ difficulty level
     const rendix = useRef(0);
+
     const COUNT = 300;
     const TOT_WORDS = 15;
-
     const totalCharsRef = useRef(0);
     const totalWordsRef = useRef(0);
     const avgIntervalRef = useRef(null);
     const TEST_DURATION_MS = 60000;
 
-    // Load words on component mount
+    // ✅ Load words whenever level changes
     useEffect(() => {
         const loadWords = async () => {
-            const words = await getwordlist(COUNT);
+            console.log("loadling : ", currentLev)
+            const words = await getwordlist({ COUNT, currentLev }); // ✅ pass level to wordlist
             setWordSet(words);
-            setWordsCol(Array(words.length).fill("")); // initialize all classes
+            setWordsCol(Array(words.length).fill(""));
         };
         loadWords();
-    }, []);
+    }, [currentLev]); // ✅ refetch when level changes
 
     const markWord = (index, className) => {
         setWordsCol(prev => {
@@ -40,19 +42,21 @@ export default function Homepage() {
         });
     };
 
-    const startTest = async () => {
+    const startTest = () => {
         setText("");
         totalCharsRef.current = 0;
         setAvgWpm(0);
         setTestOver(false);
         rendix.current = 0;
 
-        try {
-            const words = await getwordlist(COUNT);
-            setWordSet(words);
-            setWordsCol(Array(words.length).fill(""));
-        } catch (err) {
-            console.error("Failed to load words:", err);
+        if (avgWpm) {
+            const loadWords = async () => {
+                console.log("loadling : ", currentLev)
+                const words = await getwordlist({ COUNT, currentLev }); // ✅ pass level to wordlist
+                setWordSet(words);
+                setWordsCol(Array(words.length).fill(""));
+            };
+            loadWords();
         }
 
         const now = Date.now();
@@ -62,7 +66,6 @@ export default function Homepage() {
         if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
         avgIntervalRef.current = setInterval(() => {
             const elapsedMin = (Date.now() - now) / 60000;
-            // const avg = elapsedMin > 0 ? (totalCharsRef.current / 5) / elapsedMin : 0;
             const avg = elapsedMin > 0 ? (totalWordsRef.current) / elapsedMin : 0;
             setAvgWpm(Number(avg.toFixed(2)));
 
@@ -84,11 +87,11 @@ export default function Homepage() {
 
     const updateList = () => {
         rendix.current = 0;
-        const arr = wordset;
+        const arr = [...wordset]; // ✅ safer copy
         arr.splice(0, TOT_WORDS);
         setWordSet(arr);
         for (let i = 0; i < TOT_WORDS; i++) markWord(i, "");
-    }
+    };
 
     const handleInput = (e) => {
         let newText = e.target.value;
@@ -97,6 +100,7 @@ export default function Homepage() {
         const currentWord = wordset[rendix.current] || "";
         const spacePressed = newText.endsWith(" ");
         let wordDone = false;
+
         if (spacePressed) {
             newText = newText.trim();
             if (newText === currentWord) {
@@ -117,26 +121,31 @@ export default function Homepage() {
                 markWord(rendix.current, "ongoing");
             }
         }
+
         if (wordDone) {
             rendix.current++;
-            if (rendix.current % TOT_WORDS == 0) updateList();
+            if (rendix.current % TOT_WORDS === 0) updateList();
         }
 
-
-        // totalCharsRef.current += 1; // increment for every keystroke
         setText(newText);
     };
 
     const getCurrentWpm = () => {
         if (!startedAt) return 0;
         const elapsedMin = (Date.now() - startedAt) / 60000;
-        // return elapsedMin > 0 ? (totalCharsRef.current / 5) / elapsedMin : 0;
         return elapsedMin > 0 ? (totalWordsRef.current) / elapsedMin : 0;
     };
 
     useEffect(() => {
         return () => clearInterval(avgIntervalRef.current);
     }, []);
+
+    // ✅ cycle through difficulty levels
+    const toggleLevel = () => {
+        setCurrentLev(prev =>
+            prev === "easy" ? "medium" : prev === "medium" ? "hard" : "easy"
+        );
+    };
 
     return (
         <div className="homepage-container">
@@ -159,6 +168,15 @@ export default function Homepage() {
                                     : "Ready"}
                         </div>
                         <div className="btn-group">
+                            {/* ✅ Level button cycles through levels */}
+                            <button
+                                className={`btn level-btn ${currentLev}`}
+                                onClick={toggleLevel}
+                                disabled={running} // disable while running
+                            >
+                                {currentLev.toUpperCase()}
+                            </button>
+
                             <button
                                 className={`btn start-btn ${running ? "disabled" : ""}`}
                                 onClick={startTest}
