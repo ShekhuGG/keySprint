@@ -13,8 +13,10 @@ export default function Homepage() {
     const [testOver, setTestOver] = useState(false);
     const [wordset, setWordSet] = useState([]);
     const [wordsCol, setWordsCol] = useState([]);
-    const [currentLev, setCurrentLev] = useState("easy"); // ✅ difficulty level
+    const [currentLev, setCurrentLev] = useState("easy");
     const rendix = useRef(0);
+
+    const textareaRef = useRef(null);
 
     const COUNT = 300;
     const TOT_WORDS = 15;
@@ -23,16 +25,16 @@ export default function Homepage() {
     const avgIntervalRef = useRef(null);
     const TEST_DURATION_MS = 60000;
 
-    // ✅ Load words whenever level changes
     useEffect(() => {
         const loadWords = async () => {
             console.log("loadling : ", currentLev)
-            const words = await getwordlist({ COUNT, currentLev }); // ✅ pass level to wordlist
+            const words = await getwordlist({ COUNT, currentLev });
             setWordSet(words);
             setWordsCol(Array(words.length).fill(""));
         };
         loadWords();
-    }, [currentLev]); // ✅ refetch when level changes
+    }, [currentLev]);
+
 
     const markWord = (index, className) => {
         setWordsCol(prev => {
@@ -49,10 +51,14 @@ export default function Homepage() {
         setTestOver(false);
         rendix.current = 0;
 
+        setTimeout(() => {
+            textareaRef.current?.focus();
+        }, 10);
+
         if (avgWpm) {
             const loadWords = async () => {
                 console.log("loadling : ", currentLev)
-                const words = await getwordlist({ COUNT, currentLev }); // ✅ pass level to wordlist
+                const words = await getwordlist({ COUNT, currentLev });
                 setWordSet(words);
                 setWordsCol(Array(words.length).fill(""));
             };
@@ -87,7 +93,7 @@ export default function Homepage() {
 
     const updateList = () => {
         rendix.current = 0;
-        const arr = [...wordset]; // ✅ safer copy
+        const arr = [...wordset];
         arr.splice(0, TOT_WORDS);
         setWordSet(arr);
         for (let i = 0; i < TOT_WORDS; i++) markWord(i, "");
@@ -140,7 +146,7 @@ export default function Homepage() {
         return () => clearInterval(avgIntervalRef.current);
     }, []);
 
-    // ✅ cycle through difficulty levels
+
     const toggleLevel = () => {
         setCurrentLev(prev =>
             prev === "easy" ? "medium" : prev === "medium" ? "hard" : "easy"
@@ -168,11 +174,11 @@ export default function Homepage() {
                                     : "Ready"}
                         </div>
                         <div className="btn-group">
-                            {/* ✅ Level button cycles through levels */}
+
                             <button
                                 className={`btn level-btn ${currentLev}`}
                                 onClick={toggleLevel}
-                                disabled={running} // disable while running
+                                disabled={running}
                             >
                                 {currentLev.toUpperCase()}
                             </button>
@@ -205,6 +211,7 @@ export default function Homepage() {
                         ))}
                     </div>
                     <textarea
+                        ref={textareaRef}
                         id="textarea-input"
                         value={text}
                         onChange={handleInput}

@@ -196,7 +196,7 @@ export default function SpeedGraphCanvas({
                 width: "80%",
                 height: 300,
                 borderRadius: 10,
-                background: "#fff",
+                background: "#dee8e8ff",
                 boxShadow: "0 6px 18px rgba(16,24,40,0.04)",
             }}
         />
