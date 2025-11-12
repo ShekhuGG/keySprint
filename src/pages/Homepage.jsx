@@ -14,7 +14,9 @@ export default function Homepage() {
     const [wordset, setWordSet] = useState([]);
     const [wordsCol, setWordsCol] = useState([]);
     const [currentLev, setCurrentLev] = useState("easy");
+    const [maxspeed,setmax] = useState(localStorage.getItem("maxWpm") || 0);
     const rendix = useRef(0);
+
 
     const textareaRef = useRef(null);
 
@@ -88,6 +90,7 @@ export default function Homepage() {
         const currentMax = Number(localStorage.getItem("maxWpm") || 0);
         if (avgWpm > currentMax) {
             localStorage.setItem("maxWpm", avgWpm.toFixed(2));
+            setmax(localStorage.getItem("maxWpm") || 0)
         }
     };
 
@@ -161,7 +164,7 @@ export default function Homepage() {
                         <div id="headline"><h1>⌨️ KeySprint</h1></div>
                         <p className="subtext">
                             Start now → 60s key sprint → with real time SpeeeeD |
-                            | Your Max ({localStorage.getItem("maxWpm") || 0})
+                            | Your Max ({maxspeed})
                         </p>
                     </div>
 
