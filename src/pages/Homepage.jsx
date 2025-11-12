@@ -14,18 +14,19 @@ export default function Homepage() {
     const [wordset, setWordSet] = useState([]);
     const [wordsCol, setWordsCol] = useState([]);
     const [currentLev, setCurrentLev] = useState("easy");
-    const [maxspeed,setmax] = useState(localStorage.getItem("maxWpm") || 0);
+    const [stopcnt, setstopcnt] = useState(0);
+    const [maxspeed, setmax] = useState(localStorage.getItem("maxWpm") || 0);
     const rendix = useRef(0);
 
-
     const textareaRef = useRef(null);
-
     const COUNT = 300;
     const TOT_WORDS = 15;
     const totalCharsRef = useRef(0);
     const totalWordsRef = useRef(0);
     const avgIntervalRef = useRef(null);
-    const TEST_DURATION_MS = 60000;
+    const TEST_DURATION_MS = 6000;
+    const startedAtRef = useRef(null);
+
 
     useEffect(() => {
         const loadWords = async () => {
@@ -37,7 +38,6 @@ export default function Homepage() {
         loadWords();
     }, [currentLev]);
 
-
     const markWord = (index, className) => {
         setWordsCol(prev => {
             const newCol = [...prev];
@@ -47,6 +47,7 @@ export default function Homepage() {
     };
 
     const startTest = () => {
+        console.log("AVG WPM : ", avgWpm);
         setText("");
         totalCharsRef.current = 0;
         setAvgWpm(0);
@@ -69,6 +70,7 @@ export default function Homepage() {
 
         const now = Date.now();
         setStartedAt(now);
+        startedAtRef.current = now;
         setRunning(true);
 
         if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
@@ -77,22 +79,36 @@ export default function Homepage() {
             const avg = elapsedMin > 0 ? (totalWordsRef.current) / elapsedMin : 0;
             setAvgWpm(Number(avg.toFixed(2)));
 
-            if (Date.now() - now >= TEST_DURATION_MS) stopTest();
+            if (Date.now() - now >= TEST_DURATION_MS) {
+                const n = stopcnt;
+                setstopcnt(n + 1);
+            };
         }, 500);
     };
 
     const stopTest = () => {
+        if (stopcnt == 0) return;
         setRunning(false);
         setTestOver(true);
-        totalWordsRef.current = 0;
-        if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
+        console.log("beforeset : ", avgWpm);
+        const elapsedMin = (Date.now() - startedAtRef.current) / 60000;
+        const finalWpm = elapsedMin > 0 ? totalWordsRef.current / elapsedMin : 0;
+        console.log(Date.now(), startedAtRef.current, elapsedMin, " _ ", finalWpm);
+        setAvgWpm(Number(finalWpm.toFixed(2)));
+        console.log("afterset : ", avgWpm);
 
         const currentMax = Number(localStorage.getItem("maxWpm") || 0);
+        console.log("CUR MAX : ", currentMax, avgWpm);
         if (avgWpm > currentMax) {
             localStorage.setItem("maxWpm", avgWpm.toFixed(2));
+            console.log("max updated");
             setmax(localStorage.getItem("maxWpm") || 0)
         }
+        totalWordsRef.current = 0;
+        if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
     };
+
+    useEffect(stopTest, [stopcnt]);
 
     const updateList = () => {
         rendix.current = 0;
@@ -149,7 +165,6 @@ export default function Homepage() {
         return () => clearInterval(avgIntervalRef.current);
     }, []);
 
-
     const toggleLevel = () => {
         setCurrentLev(prev =>
             prev === "easy" ? "medium" : prev === "medium" ? "hard" : "easy"
@@ -177,7 +192,6 @@ export default function Homepage() {
                                     : "Ready"}
                         </div>
                         <div className="btn-group">
-
                             <button
                                 className={`btn level-btn ${currentLev}`}
                                 onClick={toggleLevel}
