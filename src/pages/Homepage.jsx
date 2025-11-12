@@ -24,7 +24,7 @@ export default function Homepage() {
     const totalCharsRef = useRef(0);
     const totalWordsRef = useRef(0);
     const avgIntervalRef = useRef(null);
-    const TEST_DURATION_MS = 6000;
+    const TEST_DURATION_MS = 60000;
     const startedAtRef = useRef(null);
 
 
