@@ -1,6 +1,6 @@
 export default async function fetchWordList({ COUNT, currentLev }) {
-
-    const fileName = currentLev + '.txt';
+    const pref = currentLev == 'easy' ? 'easy_updated' : (currentLev == 'medium' ? 'medium' : 'hard_updated');
+    const fileName = pref + '.txt';
     const res = await fetch(fileName);
     if (!res.ok) throw new Error("Failed to load word list");
     console.log("Fetching : ", currentLev, fileName);

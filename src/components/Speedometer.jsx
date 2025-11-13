@@ -1,7 +1,8 @@
 import React from "react";
 import ReactSpeedometer from "react-d3-speedometer";
 
-export default function Speedometer({ wpm }) {
+export default function Speedometer({ wpm, col }) {
+    let val = wpm.toFixed(2);
     return (
         <div className="speedometer-container" id="speedometer">
             <ReactSpeedometer
@@ -16,9 +17,26 @@ export default function Speedometer({ wpm }) {
                 textColor="#0f172a"
                 ringWidth={40}
             />
-            <div className="avg-wpm">Avg WPM: {wpm.toFixed(2)}</div>
+            <div style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                alignContent: "center",
+                justifyContent: "center"
+            }}>
+                <div style={{
+                    fontWeight: "700",
+                    fontSize: "18px"
+                }}>Avg WPM :</div>
+                <div style={{
+                    marginLeft: "10px",
+                    fontWeight: "700",
+                    fontSize: "3rem",
+                    color: `${col}`
+                }}>{val}</div>
+            </div>
             <p className="avg-info">Get your Live Words Per Minute :)</p>
-        </div>
+        </div >
     );
 }
 

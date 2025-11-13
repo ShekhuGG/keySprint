@@ -4,6 +4,7 @@ import SpeedGraphCanvas from "../components/SpeedGraphCanvas";
 import Speedometer from "../components/Speedometer";
 import "../styles/Homepage.css";
 import getwordlist from "../modules/wordlist.js";
+import TestStats from "../components/TestStats.jsx"
 
 export default function Homepage() {
     const [text, setText] = useState("");
@@ -26,7 +27,21 @@ export default function Homepage() {
     const avgIntervalRef = useRef(null);
     const TEST_DURATION_MS = 60000;
     const startedAtRef = useRef(null);
+    const mxcolRef = useRef("black");
+    const speedCol = ["#85c9a0ff", "#72d690ff", "#6bd147ff", "#d3ff25ff", "#ffe055ff", "#ff7a55ff", "#ff1717ff", "#9900ffff"]
+    const speednow = localStorage.getItem("maxWpm")
+    const getspeedcol = (speed) => {
+        console.log("val : ", (Math.log10(speed ** 3).toFixed(0)));
+        return speedCol[Math.max(0, (Math.log10(speed ** 3)).toFixed(0))];
+    }
+    mxcolRef.current = getspeedcol(speednow || 0);
+    console.log("Col now : ", mxcolRef.current, speednow, getspeedcol(speednow))
 
+    const totalCorrectRef = useRef(0);
+    const totalIncorrectRef = useRef(0);
+    const errorWordsRef = useRef([]);
+    const stoppedAtRef = useRef(null);
+    const [stats, setStats] = useState(null);
 
     useEffect(() => {
         const loadWords = async () => {
@@ -54,11 +69,20 @@ export default function Homepage() {
         setTestOver(false);
         rendix.current = 0;
 
+
+        totalCorrectRef.current = 0;
+        totalIncorrectRef.current = 0;
+        errorWordsRef.current = [];
+        stoppedAtRef.current = null;
+        setStats(null);
+
         setTimeout(() => {
             textareaRef.current?.focus();
         }, 10);
 
-        if (avgWpm) {
+        console.log("avg at st : ", avgWpm)
+
+        if (wordsCol[0]) {
             const loadWords = async () => {
                 console.log("loadling : ", currentLev)
                 const words = await getwordlist({ COUNT, currentLev });
@@ -88,22 +112,61 @@ export default function Homepage() {
 
     const stopTest = () => {
         if (stopcnt == 0) return;
+        if (running)
+            setTestOver(true);
         setRunning(false);
-        setTestOver(true);
         console.log("beforeset : ", avgWpm);
-        const elapsedMin = (Date.now() - startedAtRef.current) / 60000;
+
+
+        stoppedAtRef.current = Date.now();
+
+        const elapsedMin = (stoppedAtRef.current - startedAtRef.current) / 60000;
         const finalWpm = elapsedMin > 0 ? totalWordsRef.current / elapsedMin : 0;
         console.log(Date.now(), startedAtRef.current, elapsedMin, " _ ", finalWpm);
         setAvgWpm(Number(finalWpm.toFixed(2)));
         console.log("afterset : ", avgWpm);
 
+
+        const correctCount = totalCorrectRef.current;
+        const incorrectCount = totalIncorrectRef.current;
+        const totalTypedWords = correctCount + incorrectCount;
+        const rawSpeed = elapsedMin > 0 ? totalTypedWords / elapsedMin : 0;
+
+        const letterCounts = {};
+        for (const item of errorWordsRef.current) {
+            const src = (item.input || item.word || "").toLowerCase();
+            for (const ch of src) {
+                if (ch >= 'a' && ch <= 'z') {
+                    letterCounts[ch] = (letterCounts[ch] || 0) + 1;
+                }
+            }
+        }
+        const topLetters = Object.entries(letterCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([letter, count]) => ({ letter, count }));
+
+        const statsObj = {
+            durationSec: Math.round((stoppedAtRef.current - startedAtRef.current) / 1000), // seconds
+            durationMin: elapsedMin,
+            rawSpeed: Number(rawSpeed.toFixed(2)),
+            correctCount,
+            incorrectCount,
+            totalTypedWords,
+            topLetters
+        };
+        setStats(statsObj);
+
+
         const currentMax = Number(localStorage.getItem("maxWpm") || 0);
         console.log("CUR MAX : ", currentMax, avgWpm);
-        if (avgWpm > currentMax) {
-            localStorage.setItem("maxWpm", avgWpm.toFixed(2));
+
+        if (finalWpm > currentMax) {
+            localStorage.setItem("maxWpm", finalWpm.toFixed(2));
             console.log("max updated");
             setmax(localStorage.getItem("maxWpm") || 0)
         }
+
         totalWordsRef.current = 0;
         if (avgIntervalRef.current) clearInterval(avgIntervalRef.current);
     };
@@ -132,10 +195,17 @@ export default function Homepage() {
                 markWord(rendix.current, "correct");
                 markWord(rendix.current + 1, "ongoing");
                 totalWordsRef.current++;
+
+                totalCorrectRef.current++;
+
                 wordDone = true;
             } else if (newText.length) {
                 markWord(rendix.current, "red");
                 markWord(rendix.current + 1, "ongoing");
+
+                totalIncorrectRef.current++;
+                errorWordsRef.current.push({ word: currentWord, input: newText });
+
                 wordDone = true;
             }
             newText = "";
@@ -171,16 +241,25 @@ export default function Homepage() {
         );
     };
 
+
+    // ==================================================
+
     return (
         <div className="homepage-container">
             <div className="homepage-content">
                 <header className="header-section">
                     <div className="header-left">
                         <div id="headline"><h1>⌨️ KeySprint</h1></div>
-                        <p className="subtext">
-                            Start now → 60s key sprint → with real time SpeeeeD |
-                            | Your Max ({maxspeed})
-                        </p>
+                        <div style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignContent: "center",
+                            alignItems: "center"
+
+                        }} className="subtext">
+                            <p>Start now → 60s key sprint → with real time SpeeeeD </p>
+                            <p style={{ color: mxcolRef.current }} className="maxCol"> Your Max ({maxspeed})</p>
+                        </div>
                     </div>
 
                     <div className="header-right">
@@ -210,6 +289,7 @@ export default function Homepage() {
                             <button
                                 className={`btn stop-btn ${running ? "" : "disabled"}`}
                                 onClick={() => {
+                                    setstopcnt(1);
                                     stopTest();
                                     setText("");
                                     totalCharsRef.current = 0;
@@ -251,9 +331,18 @@ export default function Homepage() {
                         />
                     </div>
 
-                    <Speedometer wpm={avgWpm} />
+                    <Speedometer wpm={avgWpm} col={getspeedcol(avgWpm)} />
+
+
+                    {testOver && stats && (
+                        <TestStats stats={stats} />
+                    )}
+
                 </section>
-            </div>
-        </div>
+                <footer>
+                    Made with <i style={{ color: "rgb(215, 11, 11)" }} className="fa-regular fa-heart"></i> by ShekZz
+                </footer>
+            </div >
+        </div >
     );
 }
